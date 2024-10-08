@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>실시간 채팅</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; }
+        #chat { height: 400px; overflow-y: scroll; border: 1px solid #ddd; padding: 10px; margin-bottom: 20px; }
+        #form { display: flex; }
+        #input { flex-grow: 1; margin-right: 10px; }
+        #nickname { margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+    <div id="chat"></div>
+    <input type="text" id="nickname" placeholder="닉네임">
+    <form id="form">
+        <input type="text" id="input" autocomplete="off" placeholder="메시지 입력...">
+        <button>보내기</button>
+    </form>
+
+    <!-- socket.io 클라이언트 라이브러리 -->
+    <script src="/socket.io/socket.io.js"></script>
+
+    <!-- 실시간 채팅 로직 -->
+    <script>
+        const socket = io(); // 서버에 연결
+
+        const form = document.getElementById('form');
+        const input = document.getElementById('input');
+        const nickname = document.getElementById('nickname');
+        const chat = document.getElementById('chat');
+
+        // 메시지 전송 시 이벤트 처리
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            if (input.value) {
+                socket.emit('chat message', { nickname: nickname.value || '익명', message: input.value });
+                input.value = '';
+            }
+        });
+
+        // 서버로부터 메시지를 받을 때 처리
+        socket.on('chat message', (msg) => {
+            const item = document.createElement('p');
+            item.textContent = `${msg.nickname}: ${msg.message}`;
+            chat.appendChild(item);
+            chat.scrollTop = chat.scrollHeight; // 자동 스크롤
+        });
+    </script>
+</body>
+</html>
